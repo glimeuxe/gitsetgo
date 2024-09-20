@@ -1,0 +1,28 @@
+#!/bin/bash
+
+repo_url=$(git remote get-url origin 2>/dev/null)
+
+if [[ -z "$repo_url" ]]; then
+	echo "❌ Error: No remote repository found"
+	exit 1
+fi
+
+repo_name=$(basename "${repo_url%.git}")
+
+read -p "Commit message (optional): " commit_msg
+git add .
+
+commit_msg=${commit_msg:-""}
+if ! git commit --allow-empty-message -m "$commit_msg"; then
+	echo "❌ Failed to commit"
+	exit 1
+fi
+
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+if ! git push origin "$branch_name"; then
+	echo "❌ Failed to push to branch"
+	exit 1
+fi
+
+echo "✅ Pushed to $repo_name/$branch_name"
