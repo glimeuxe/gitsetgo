@@ -9,9 +9,8 @@ fi
 
 repo_name=$(basename "${repo_url%.git}")
 
-# Check for unstaged changes
 if ! git diff --quiet; then
-	read -p "Detected unstaged changes. Stash changes before proceeding? Enter 'Y' or 'N': " stash_changes
+	read -p "Detected unstaged changes, stash changes before pulling? Enter 'Y' or 'N': " stash_changes
 	if [[ "$stash_changes" =~ ^[Yy]$ ]]; then
 		if ! git stash; then
 			echo "❌ Failed to stash changes"
@@ -19,7 +18,7 @@ if ! git diff --quiet; then
 		fi
 		echo "✅ Stashed changes"
 	else
-		echo "❌ Please commit or stash changes before proceeding"
+		echo "❌ Please commit or stash changes before pulling"
 		exit 1
 	fi
 else
@@ -28,10 +27,19 @@ fi
 
 branch_name=$(git rev-parse --abbrev-ref HEAD)
 
-# Fetch changes from the remote branch, but do not merge
-if ! git fetch origin "$branch_name"; then
-	echo "❌ Failed to fetch from repository"
+# Safely pull changes from the remote branch
+if ! git pull origin "$branch_name" --rebase; then
+	echo "❌ Failed to pull on repository"
 	exit 1
+fi
+
+# Apply stashed changes if they were stashed
+if [[ "$stash_changes" =~ ^[Yy]$ ]]; then
+	if ! git stash pop; then
+		echo "❌ Failed to apply stashed changes"
+		exit 1
+	fi
+	echo "✅ Applied stashed changes"
 fi
 
 # Add and commit changes
@@ -44,19 +52,10 @@ if ! git commit --allow-empty-message -m "$commit_msg"; then
 	exit 1
 fi
 
-# Force push local changes, overwriting remote
+# Push changes to the remote repository
 if ! git push --force origin "$branch_name"; then
-	echo "❌ Failed to push changes (with force) to branch"
+	echo "❌ Failed to push to branch"
 	exit 1
 fi
 
 echo "✅ Completed postgit for $repo_name/$branch_name"
-
-# Apply stashed changes if they were stashed
-if [[ "$stash_changes" =~ ^[Yy]$ ]]; then
-	if ! git stash pop; then
-		echo "❌ Failed to apply stashed changes"
-		exit 1
-	fi
-	echo "✅ Applied stashed changes"
-fi
