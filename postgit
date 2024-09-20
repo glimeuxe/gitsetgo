@@ -3,7 +3,7 @@
 repo_url=$(git remote get-url origin 2>/dev/null)
 
 if [[ -z "$repo_url" ]]; then
-	echo "❌ Failed to find repository"
+	echo "❌ Failed to find remote repository"
 	exit 1
 fi
 
@@ -21,19 +21,15 @@ if ! git diff --quiet; then
 		echo "❌ Please commit or stash changes before pulling"
 		exit 1
 	fi
-else
-	echo "✅ No unstaged changes detected"
 fi
 
 branch_name=$(git rev-parse --abbrev-ref HEAD)
 
-# Safely pull changes from the remote branch
 if ! git pull origin "$branch_name" --rebase; then
-	echo "❌ Failed to pull on repository"
+	echo "❌ Failed to pull on remote repository"
 	exit 1
 fi
 
-# Apply stashed changes if they were stashed
 if [[ "$stash_changes" =~ ^[Yy]$ ]]; then
 	if ! git stash pop; then
 		echo "❌ Failed to apply stashed changes"
@@ -42,7 +38,6 @@ if [[ "$stash_changes" =~ ^[Yy]$ ]]; then
 	echo "✅ Applied stashed changes"
 fi
 
-# Add and commit changes
 read -p "Commit message (optional): " commit_msg
 git add .
 
@@ -52,7 +47,6 @@ if ! git commit --allow-empty-message -m "$commit_msg"; then
 	exit 1
 fi
 
-# Push changes to the remote repository
 if ! git push --force origin "$branch_name"; then
 	echo "❌ Failed to push to branch"
 	exit 1

@@ -1,17 +1,17 @@
 #!/bin/bash
 
-read -p "Clone or link repository? Enter 'clone' or 'link': " action
-read -p "Enter repository URL, with or without .git: " repo_url
+read -p "Clone or link to remote repository? Enter 'clone' or 'link': " action
+read -p "Enter remote repository URL, with or without .git: " repo_url
 repo_url=${repo_url%.git}.git
 repo_name=$(basename "${repo_url%.git}")
 
 if [[ "$action" =~ ^[Cc]lone$ ]]; then
 	if ! git clone "$repo_url"; then
-		echo "❌ Failed to clone repository"
+		echo "❌ Failed to clone remote repository"
 		exit 1
 	fi
 	cd "$repo_name" || { echo "❌ Failed to change directory"; exit 1; }
-	echo "✅ Cloned repository to current directory"
+	echo "✅ Cloned remote repository to current directory"
 elif [[ "$action" =~ ^[Ll]ink$ ]]; then
 	if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 		if ! git init; then
@@ -25,7 +25,7 @@ elif [[ "$action" =~ ^[Ll]ink$ ]]; then
 		echo "✅ Linked current directory to remote repository"
 	fi
 else
-	echo "❌ Enter 'clone' or 'link'"
+	echo "❌ Please enter 'clone' or 'link'"
 	exit 1
 fi
 
@@ -34,7 +34,7 @@ branch_name=${branch_name:-"main"}
 
 if [[ "$branch_name" != "main" ]]; then
 	if ! git checkout -b "$branch_name" 2>/dev/null && ! git checkout "$branch_name"; then
-		echo "❌ Failed to create or switch to branch"
+		echo "❌ Failed to create and/or switch to branch"
 		exit 1
 	fi
 fi
