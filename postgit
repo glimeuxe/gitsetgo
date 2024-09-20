@@ -10,7 +10,7 @@ fi
 repo_name=$(basename "${repo_url%.git}")
 
 if ! git diff --quiet; then
-	read -p "Detected unstaged changes, stash changes before pulling? Enter 'Y' or 'N': " stash_changes
+	read -p "Detected unstaged changes, stash changes or abort? Enter 'Y' or 'N': " stash_changes
 	if [[ "$stash_changes" =~ ^[Yy]$ ]]; then
 		if ! git stash; then
 			echo "❌ Failed to stash changes"
@@ -18,7 +18,7 @@ if ! git diff --quiet; then
 		fi
 		echo "✅ Stashed changes"
 	else
-		echo "❌ Please commit or stash changes before pulling"
+		echo "❌ Aborted"
 		exit 1
 	fi
 fi

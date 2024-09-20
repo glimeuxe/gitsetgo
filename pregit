@@ -1,9 +1,21 @@
 #!/bin/bash
 
 read -p "Clone or link to remote repository? Enter 'clone' or 'link': " action
+
+if [[ ! "$action" =~ ^[Cc]lone$ && ! "$action" =~ ^[Ll]ink$ ]]; then
+	echo "❌ Please enter 'clone' or 'link'"
+	exit 1
+fi
+
 read -p "Enter remote repository URL, with or without .git: " repo_url
-repo_url=${repo_url%.git}.git
-repo_name=$(basename "${repo_url%.git}")
+
+if [[ "$repo_url" =~ https://github.com/([^/]+)/([^/.]+)(\.git)? ]]; then
+	repo_url="https://github.com/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}.git"
+	repo_name="${BASH_REMATCH[2]}"
+else
+	echo "❌ Failed to parse remote repository URL"
+	exit 1
+fi
 
 if [[ "$action" =~ ^[Cc]lone$ ]]; then
 	if ! git clone "$repo_url"; then
@@ -11,22 +23,19 @@ if [[ "$action" =~ ^[Cc]lone$ ]]; then
 		exit 1
 	fi
 	cd "$repo_name" || { echo "❌ Failed to change directory"; exit 1; }
-	echo "✅ Cloned remote repository to current directory"
+	echo "✅ Cloned remote repository and changed to its local directory"
 elif [[ "$action" =~ ^[Ll]ink$ ]]; then
 	if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 		if ! git init; then
-			echo "❌ Failed to initialize Git in current directory"
+			echo "❌ Failed to initialize Git"
 			exit 1
 		fi
 	fi
 	if ! git remote add origin "$repo_url" 2>/dev/null; then
-		echo "⚠️ Failed to add 'origin', or it already exists"
+		echo "⚠️ Failed to add remote repository"
 	else
 		echo "✅ Linked current directory to remote repository"
 	fi
-else
-	echo "❌ Please enter 'clone' or 'link'"
-	exit 1
 fi
 
 read -p "Enter branch name, if not working on main branch (optional): " branch_name
