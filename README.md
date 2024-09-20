@@ -8,7 +8,7 @@
 GitSetGo supports POSIX-compliant OSes (cf. https://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems).
 
 ## Setup
-1. Optionally, add `pregit` and `postgit` to your PATH.
+1. Optionally, add `pregit` and `postgit` to your system PATH.
 2. Ensure `pregit` and `postgit` are executable.
 3. Ensure `git` is installed.
 
