@@ -20,9 +20,9 @@ elif [[ "$action" =~ ^[Ll]ink$ ]]; then
 		fi
 	fi
 	if ! git remote add origin "$repo_url" 2>/dev/null; then
-		echo "❌ Failed to add origin"
+		echo "⚠️ Failed to add 'origin', or it already exists"
 	else
-		echo "✅ Linked current directory"
+		echo "✅ Linked current directory to remote repository"
 	fi
 else
 	echo "❌ Enter 'clone' or 'link'"
@@ -34,7 +34,7 @@ branch_name=${branch_name:-"main"}
 
 if [[ "$branch_name" != "main" ]]; then
 	if ! git checkout -b "$branch_name" 2>/dev/null && ! git checkout "$branch_name"; then
-		echo "❌ Error: Failed to create and/or switch to branch"
+		echo "❌ Failed to create or switch to branch"
 		exit 1
 	fi
 fi
